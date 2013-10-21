@@ -1,0 +1,8 @@
+dist
+temp
+Debug
+Release
+ipch
+*.sdf
+*.suo
+*.vcxproj.user
