@@ -4,6 +4,7 @@
 
 #include "V8SafeCall.h"
 #include "V8ArrayBufferUtils.h"
+#include "V8StringUtils.h"
 
 v8::Handle<v8::FunctionTemplate> Function::V8Constructor;
 
@@ -21,6 +22,7 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
     void* addressLocal = address;
 
     std::vector<char*> strings;
+    std::vector<wchar_t*> wstrings;
 
     for(int i=signature.size()-1; i>=0; --i)
     {
@@ -36,8 +38,14 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
         }
         else if(signature[i] == 'c')
         {
-            char* a = _strdup(*v8::String::Utf8Value(args[i]));
+            char* a = _strdup(ToAnsi(args[i]->ToString()).data());
             strings.push_back(a);
+            _asm push a
+        }
+        else if(signature[i] == 'w')
+        {
+            wchar_t* a = _wcsdup(ToWideChar(args[i]->ToString()).data());
+            wstrings.push_back(a);
             _asm push a
         }
         else if(signature[i] == 's')
@@ -71,6 +79,10 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
     }
 
     for(std::vector<char*>::iterator it = strings.begin(); it != strings.end(); ++it)
+    {
+        free(*it);
+    }
+    for(std::vector<wchar_t*>::iterator it = wstrings.begin(); it != wstrings.end(); ++it)
     {
         free(*it);
     }

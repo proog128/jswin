@@ -44,5 +44,8 @@
     <ClInclude Include="V8ArrayBufferUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="V8StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

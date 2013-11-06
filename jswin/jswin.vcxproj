@@ -167,6 +167,7 @@
     <ClInclude Include="Library.h" />
     <ClInclude Include="V8ArrayBufferUtils.h" />
     <ClInclude Include="V8SafeCall.h" />
+    <ClInclude Include="V8StringUtils.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

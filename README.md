@@ -44,7 +44,8 @@ Retrieves the function named `procName` from the DLL. When calling the function 
 `signature` is a string in which each character specifies the C compatible type of an argument. The following types are supported:
 
 * `i` integer
-* `c` string
+* `c` ANSI string
+* `w` wide character string
 * `s` struct or array
 
 JavaScript strings are converted to UTF-8 encoded, null-terminated byte arrays (C strings). Structs or arrays have to be supplied as `ArrayBuffer`.
