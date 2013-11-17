@@ -70,6 +70,10 @@ Constructs a new object describing a JavaScript function callable from C. `signa
 
 Returns a C compatible address for the JavaScript function corresponding to the `CallbackFunction` object. This address can be passed as argument when calling a function from the DLL. The address remains valid as long as the `CallbackFunction` is not deleted by the garbage collector.
 
+`require(moduleId)` returns `Object`
+
+Loads and executes code in another JavaScript file. Based on [CommonJS Modules 1.1.1](http://wiki.commonjs.org/wiki/Modules/1.1.1).
+
 ## Compiling
 
 This source code package contains project files for Microsoft Visual C++ 2012.
