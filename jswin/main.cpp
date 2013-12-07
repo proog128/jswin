@@ -64,7 +64,18 @@ int main(int argc, char* argv[])
     }
     catch(const std::exception& ex)
     {
+#ifdef _WINDOWS
+        MessageBoxA(NULL, ex.what(), "Error", MB_OK | MB_ICONERROR);
+#else
         std::cout << ex.what() << std::endl;
+#endif
         return -1;
     }
 }
+
+#ifdef _WINDOWS
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+{
+    return main(__argc, __argv);
+}
+#endif
