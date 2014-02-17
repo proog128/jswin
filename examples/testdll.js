@@ -21,3 +21,19 @@ var result2 = Sum2(a, b, new CallbackFunction("ii", "stdcall", function(x, y) {
 
 print("= " + result2);
 print();
+
+print("STRUCT");
+
+var intStruct = new DataView(new ArrayBuffer(4));
+intStruct.setUint32(0, 42, true);
+var Struct = testdll.getProc("Struct", "s", "cdecl");
+var result = Struct(intStruct.buffer);
+print("Returned: " + result);
+
+print();
+
+print("STRUCT (NULL)");
+
+var Struct = testdll.getProc("Struct", "s", "cdecl");
+var result = Struct(null);
+print("Returned: " + result);

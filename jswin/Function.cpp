@@ -38,25 +38,37 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
         }
         else if(signature[i] == 'c')
         {
-            char* a = _strdup(ToAnsi(args[i]->ToString()).data());
-            strings.push_back(a);
+            char* a = NULL;
+			if(!args[i]->IsNull())
+			{
+                _strdup(ToAnsi(args[i]->ToString()).data());
+                strings.push_back(a);
+            }
             _asm push a
         }
         else if(signature[i] == 'w')
         {
-            wchar_t* a = _wcsdup(ToWideChar(args[i]->ToString()).data());
-            wstrings.push_back(a);
+            wchar_t* a = NULL;
+			if(!args[i]->IsNull())
+			{
+                _wcsdup(ToWideChar(args[i]->ToString()).data());
+                wstrings.push_back(a);
+            }
             _asm push a
         }
         else if(signature[i] == 's')
         {
-            if(!args[i]->IsArrayBuffer())
-            {
-                throw std::runtime_error("Argument is not an array buffer");
-            }
-            v8::Handle<v8::ArrayBuffer> arrayBuffer = v8::Handle<v8::ArrayBuffer>::Cast(args[i]);
+			void* a = NULL;
+			if(!args[i]->IsNull())
+			{
+                if(!args[i]->IsArrayBuffer())
+                {
+                    throw std::runtime_error("Argument is not an array buffer");
+                }
+                v8::Handle<v8::ArrayBuffer> arrayBuffer = v8::Handle<v8::ArrayBuffer>::Cast(args[i]);
 
-            void* a = ExternalizeAutoDelete(arrayBuffer);
+                a = ExternalizeAutoDelete(arrayBuffer);
+            }
             _asm push a
         }
         else
