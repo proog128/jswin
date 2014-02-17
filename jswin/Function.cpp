@@ -24,19 +24,26 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
     std::vector<char*> strings;
     std::vector<wchar_t*> wstrings;
 
-    for(int i=signature.size()-1; i>=0; --i)
+    for(int i=signature.size()-2; i>=0; --i)
     {
         if(i > args.Length()-1)
         {
             throw std::runtime_error("Invalid argument count");
         }
 
-        if(signature[i] == 'i')
+        char type = signature[i+1];
+
+        if(type == 'i')
         {
             int a = args[i]->Int32Value();
             _asm push a
         }
-        else if(signature[i] == 'c')
+        else if(type == 'u')
+        {
+            int a = args[i]->Uint32Value();
+            _asm push a
+        }
+        else if(type == 'c')
         {
             char* a = NULL;
 			if(!args[i]->IsNull())
@@ -46,7 +53,7 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
             }
             _asm push a
         }
-        else if(signature[i] == 'w')
+        else if(type == 'w')
         {
             wchar_t* a = NULL;
 			if(!args[i]->IsNull())
@@ -56,7 +63,7 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
             }
             _asm push a
         }
-        else if(signature[i] == 's')
+        else if(type == 's')
         {
 			void* a = NULL;
 			if(!args[i]->IsNull())
@@ -84,7 +91,7 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
     if(callingConvention == CDecl)
     {
         // Clean up stack
-        for(int i=signature.size()-1; i>=0; --i)
+        for(int i=signature.size()-2; i>=0; --i)
         {
             _asm pop eax
         }
@@ -98,7 +105,23 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
     {
         free(*it);
     }
-    args.GetReturnValue().Set(r);
+
+    if(signature[0] == 'u')
+    {
+        args.GetReturnValue().Set(static_cast<unsigned int>(r));
+    }
+    else if(signature[0] == 'i')
+    {
+        args.GetReturnValue().Set(static_cast<int>(r));
+    }
+    else if(signature[0] == 'v')
+    {
+        args.GetReturnValue().Set(v8::Undefined());
+    }
+    else
+    {
+        throw std::runtime_error("Unknown return type");
+    }
 }
 
 void Function::V8Init()
@@ -116,7 +139,7 @@ void Function::V8ConstructorFunction(const v8::FunctionCallbackInfo<v8::Value>& 
         throw std::runtime_error("Constructor was called without 'new'");
     }
 
-    if(args.Length() < 2)
+    if(args.Length() < 3)
     {
         throw std::runtime_error("Invalid argument count");
     }
@@ -138,7 +161,20 @@ void Function::V8ConstructorFunction(const v8::FunctionCallbackInfo<v8::Value>& 
         throw std::runtime_error("Invalid calling convention");
     }
 
-    Function* func = new Function(*argSignature, argCallingConvention, argAddress);
+    std::string signature = "i";    // Set 'i' as default for now (compatibility)
+    signature += *argSignature;
+    if(args.Length() > 3)
+    {
+        v8::String::Utf8Value argReturnType(args[3]);
+        if(argReturnType.length() != 1)
+        {
+            throw std::runtime_error("Invalid length of return type specifier");
+        }
+
+        signature[0] = (*argReturnType)[0];
+    }
+
+    Function* func = new Function(signature, argCallingConvention, argAddress);
 
     v8::Persistent<v8::Object> funcObj;
     V8Wrap(func, funcObj);

@@ -7,9 +7,10 @@ print("CDECL");
 var Sum = testdll.getProc("Sum", "iii", "cdecl");
 var result = Sum(a, b, new CallbackFunction("ii", "cdecl", function(x, y) {
     print(x + " + " + y);
+    return 1;
 }).getAddress());
 
-print("= " + result);
+print(" = " + result);
 print();
 
 print("STDCALL");
@@ -17,9 +18,10 @@ print("STDCALL");
 var Sum2 = testdll.getProc("_Sum2@12", "iii", "stdcall");
 var result2 = Sum2(a, b, new CallbackFunction("ii", "stdcall", function(x, y) {
     print(x + " + " + y)
+    return 2;
 }).getAddress());
 
-print("= " + result2);
+print(" = " + result2);
 print();
 
 print("STRUCT");

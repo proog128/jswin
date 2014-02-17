@@ -18,7 +18,7 @@ unsigned int __stdcall genericCallbackFunction(CallbackFunction* cb)
     const std::string& signature = cb->getSignature();
 
     std::vector<v8::Handle<v8::Value> > args;
-    for(size_t i=0; i<signature.length(); ++i)
+    for(size_t i=1; i<signature.length(); ++i)
     {
         if(signature[i] == 'i')
         {
@@ -30,13 +30,40 @@ unsigned int __stdcall genericCallbackFunction(CallbackFunction* cb)
             _asm mov [v], ecx
             args.push_back(v8::Int32::New(v));
         }
+        else if(signature[i] == 'u')
+        {
+            int v = 0;
+            unsigned int o = 16 + i*4;
+            _asm mov eax, ebp
+            _asm add eax, o
+            _asm mov ecx, [eax]
+            _asm mov [v], ecx
+            args.push_back(v8::Uint32::New(v));
+        }
         else
         {
-            std::cerr << "unknown argument type: " << signature[i] << "\n";
+            throw std::runtime_error("Unknown argument type");
         }
     }
+
     v8::Handle<v8::Value> returnObj = func->CallAsFunction(v8::Object::New(), args.size(), args.data());
-    return returnObj->Uint32Value();
+
+    if(signature[0] == 'i')
+    {
+        return returnObj->Uint32Value();
+    }
+    else if(signature[0] == 'u')
+    {
+        return returnObj->Uint32Value();
+    }
+    else if(signature[0] == 'v')
+    {
+        return 0;
+    }
+    else
+    {
+        throw std::runtime_error("Unknown return type");
+    }
 }
 
 static const unsigned char FUNC_CODE[] = {
@@ -57,7 +84,7 @@ CallbackFunction::CallbackFunction(const std::string& signature, CallingConventi
     if(callingConvention == StdCall)
     {
         // We have to clean the stack
-        argLength = signature.length() * sizeof(int);
+        argLength = (signature.length()-1) * sizeof(int);
     }
     else if(callingConvention == CDecl)
     {
@@ -133,10 +160,23 @@ void CallbackFunction::V8ConstructorFunction(const v8::FunctionCallbackInfo<v8::
         throw std::runtime_error("Invalid calling convention");
     }
 
+    std::string signature = "i";    // Set 'i' as default for now (compatibility)
+    signature += *argSignature;
+    if(args.Length() > 3)
+    {
+        v8::String::Utf8Value argReturnType(args[3]);
+        if(argReturnType.length() != 1)
+        {
+            throw std::runtime_error("Invalid length of return type specifier");
+        }
+
+        signature[0] = (*argReturnType)[0];
+    }
+
     v8::Handle<v8::Object> argCallbackObj = args[2]->ToObject();
     v8::Persistent<v8::Object> argCallbackPersistentObj(v8::Isolate::GetCurrent(), argCallbackObj);
 
-    CallbackFunction* cbFunc = new CallbackFunction(*argSignature, argCallingConvention, argCallbackPersistentObj);
+    CallbackFunction* cbFunc = new CallbackFunction(signature, argCallingConvention, argCallbackPersistentObj);
 
     v8::Persistent<v8::Object> cbFuncObj;
     V8Wrap(cbFunc, cbFuncObj);

@@ -37,18 +37,25 @@ Returns the base address of an `ArrayBuffer`. This is the memory address of the 
 
 Terminates the process. Set `status` to `0` to indicate success. Use another status code to indicate failure.
 
-`DLLObject.getProc(procName, signature, callingConvention) returns `DLLProc`
+`DLLObject.getProc(procName, signature, callingConvention[, returnType]) returns `DLLProc`
 
-Retrieves the function named `procName` from the DLL. When calling the function from JavaScript, the arguments are converted as specified in `signature`. `callingConvention` must be `"stdcall"` or `"cdecl"`.
+Retrieves the function named `procName` from the DLL. When calling the function from JavaScript, the arguments are converted as specified in `signature`. `callingConvention` must be `"stdcall"` or `"cdecl"`. The returned value is converted according to `returnType`. If `returnType`is not given, `i` is assumed.
 
 `signature` is a string in which each character specifies the C compatible type of an argument. The following types are supported:
 
 * `i` integer
+* `u` unsigned integer
 * `c` ANSI string
 * `w` wide character string
 * `s` struct or array
 
-JavaScript strings are converted to UTF-8 encoded, null-terminated byte arrays (C strings). Structs or arrays have to be supplied as `ArrayBuffer`.
+`returnType` is a string with length 1. The following types are supported:
+
+* `i` integer
+* `u` unsigned integer
+* `v` void (function returns `undefined`)
+
+JavaScript strings are converted to UTF-8 encoded, null-terminated byte arrays (C strings). Structs or arrays have to be supplied as `ArrayBuffer`. Passing `null` instead of string or array is converted to NULL pointer.
 
 `DLLProc(...)` returns `number`
 
@@ -62,9 +69,12 @@ Constructs a new object describing a function callable from C. `signature` and `
 
 Returns the address of the function corresponding to the `DLLProc` object.
 
-`new CallbackFunction(signature, callingConvention, func)` returns `CallbackFunction`
+`new CallbackFunction(signature, callingConvention, func[, returnType])` returns `CallbackFunction`
 
-Constructs a new object describing a JavaScript function callable from C. `signature` and `callingConvention` are identical to `DLLObject.getProc(...)`. `func` is a JavaScript function.
+Constructs a new object describing a JavaScript function callable from C. `signature`, `callingConvention`, and `returnType` are identical to `DLLObject.getProc(...)`. `func` is a JavaScript function.
+
+Allowed argument types for signature: `i`, `u`
+Allowed return types: `i`, `u`, `v`
 
 `CallbackFunction.getAddress()` returns `number`
 

@@ -75,7 +75,20 @@ void Library::V8GetProc(const v8::FunctionCallbackInfo<v8::Value>& args)
         throw std::runtime_error("Invalid calling convention");
     }
 
-    Function* func = library->getProc(*argProcName, *argSignature, argCallingConvention);
+    std::string signature = "i";    // Set 'i' as default for now (compatibility)
+    signature += *argSignature;
+    if(args.Length() > 3)
+    {
+        v8::String::Utf8Value argReturnType(args[3]);
+        if(argReturnType.length() != 1)
+        {
+            throw std::runtime_error("Invalid length of return type specifier");
+        }
+
+        signature[0] = (*argReturnType)[0];
+    }
+
+    Function* func = library->getProc(*argProcName, signature, argCallingConvention);
     v8::Persistent<v8::Object> funcObj;
     Function::V8Wrap(func, funcObj);
     args.GetReturnValue().Set(funcObj);
