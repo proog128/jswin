@@ -48,7 +48,7 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
             char* a = NULL;
 			if(!args[i]->IsNull())
 			{
-                _strdup(ToAnsi(args[i]->ToString()).data());
+                a = _strdup(ToAnsi(args[i]->ToString()).data());
                 strings.push_back(a);
             }
             _asm push a
@@ -58,7 +58,7 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
             wchar_t* a = NULL;
 			if(!args[i]->IsNull())
 			{
-                _wcsdup(ToWideChar(args[i]->ToString()).data());
+                a = _wcsdup(ToWideChar(args[i]->ToString()).data());
                 wstrings.push_back(a);
             }
             _asm push a
