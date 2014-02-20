@@ -35,11 +35,10 @@ public:
 inline void V8ExternalizeAutoDeleteWeakCallback(const v8::WeakCallbackData<v8::ArrayBuffer, v8::Persistent<v8::ArrayBuffer> >& data)
 {
     // Delete contents of ArrayBuffer
-    v8::Handle<v8::Value> contentsHeapValue = data.GetValue()->GetHiddenValue(v8::String::New("__jswin_external"));
-    v8::Handle<v8::External> contentsHeapExternal = v8::Local<v8::External>::Cast(contentsHeapValue->ToObject());
-    v8::ArrayBuffer::Contents* contentsHeap = static_cast<v8::ArrayBuffer::Contents*>(contentsHeapExternal->Value());
-    SimpleArrayBufferAllocator::getInstance().Free(contentsHeap->Data(), contentsHeap->ByteLength());   // delete data
-    delete contentsHeap;            // delete contents object
+    v8::Handle<v8::Value> ptrValue = data.GetValue()->GetHiddenValue(v8::String::New("__jswin_external"));
+    v8::Handle<v8::External> ptrExternal = v8::Local<v8::External>::Cast(ptrValue->ToObject());
+    void* ptr = ptrExternal->Value();
+    SimpleArrayBufferAllocator::getInstance().Free(ptr, data.GetValue()->ByteLength());   // delete data
     data.GetParameter()->Reset();   // reset persistent handle
     delete data.GetParameter();     // delete persistent handle
 }
@@ -59,8 +58,7 @@ inline void* ExternalizeAutoDelete(v8::Handle<v8::ArrayBuffer> arrayBuffer)
         ptr = contents.Data();
         
         // Store contents as hidden value
-        v8::ArrayBuffer::Contents* contentsHeap = new v8::ArrayBuffer::Contents(contents);
-        arrayBuffer->SetHiddenValue(v8::String::New("__jswin_external"), v8::External::New(contentsHeap));
+        arrayBuffer->SetHiddenValue(v8::String::New("__jswin_external"), v8::External::New(ptr));
 
         // Make weak handle
         v8::Persistent<v8::ArrayBuffer>* persistentArrayBuffer = new v8::Persistent<v8::ArrayBuffer>(v8::Isolate::GetCurrent(), arrayBuffer);
@@ -69,10 +67,9 @@ inline void* ExternalizeAutoDelete(v8::Handle<v8::ArrayBuffer> arrayBuffer)
     else
     {
         // Retrieve contents from hidden value
-        v8::Handle<v8::Value> contentsHeapValue = arrayBuffer->GetHiddenValue(v8::String::New("__jswin_external"));
-        v8::Handle<v8::External> contentsHeapExternal = v8::Local<v8::External>::Cast(contentsHeapValue->ToObject());
-        v8::ArrayBuffer::Contents* contentsHeap = static_cast<v8::ArrayBuffer::Contents*>(contentsHeapExternal->Value());
-        ptr = contentsHeap->Data();
+        v8::Handle<v8::Value> ptrValue = arrayBuffer->GetHiddenValue(v8::String::New("__jswin_external"));
+        v8::Handle<v8::External> ptrExternal = v8::Local<v8::External>::Cast(ptrValue->ToObject());
+        ptr = ptrExternal->Value();
     }
     return ptr;
 }

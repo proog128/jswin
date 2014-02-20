@@ -56,6 +56,22 @@ void V8Exit(const v8::FunctionCallbackInfo<v8::Value>& args)
     exit(exitCode);
 }
 
+void V8FromMemory(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if(args.Length() < 2)
+    {
+        throw std::runtime_error("Invalid argument count");
+    }
+
+    void* ptr = (void*)args[0]->Uint32Value();
+    int len = args[1]->Uint32Value();
+
+    v8::Local<v8::ArrayBuffer> arrayBuffer = v8::ArrayBuffer::New(ptr, len);
+    arrayBuffer->SetHiddenValue(v8::String::New("__jswin_external"), v8::External::New(ptr));
+
+    args.GetReturnValue().Set(arrayBuffer);
+}
+
 v8::Handle<v8::ObjectTemplate> buildGlobalObject()
 {
     v8::Handle<v8::ObjectTemplate> globalObjectTemplate = v8::ObjectTemplate::New();
@@ -67,6 +83,8 @@ v8::Handle<v8::ObjectTemplate> buildGlobalObject()
 
     globalObjectTemplate->Set("DLLProc", v8::FunctionTemplate::New(V8SafeCall<Function::V8ConstructorFunction>));
     globalObjectTemplate->Set("CallbackFunction", v8::FunctionTemplate::New(V8SafeCall<CallbackFunction::V8ConstructorFunction>));
+
+    globalObjectTemplate->Set("fromMemory", v8::FunctionTemplate::New(V8SafeCall<V8FromMemory>));
 
     return globalObjectTemplate;
 }
