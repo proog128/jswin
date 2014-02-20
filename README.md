@@ -84,6 +84,10 @@ Returns a C compatible address for the JavaScript function corresponding to the 
 
 Loads and executes code in another JavaScript file. Based on [CommonJS Modules 1.1.1](http://wiki.commonjs.org/wiki/Modules/1.1.1).
 
+`fromMemory(address, byteLength)` returns `Object`
+
+Constructs an `ArrayBuffer` over an existing memory block with length `byteLength` at `address`.
+
 ## Compiling
 
 This source code package contains project files for Microsoft Visual C++ 2012.

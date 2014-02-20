@@ -51,6 +51,10 @@ int main(int argc, char* argv[])
 
         v8::Context::Scope contextScope(context);
 
+        v8::Handle<v8::Object> securityToken = v8::Object::New();
+        moduleContext.securityToken.Reset(isolate, securityToken);
+        context->SetSecurityToken(securityToken);
+
         v8::Handle<v8::Object> requireData = initRequire(context, moduleContext, "");
         v8::Handle<v8::Object> returnValue;
         require(moduleId, requireData, returnValue);

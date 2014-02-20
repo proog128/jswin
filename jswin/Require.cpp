@@ -88,7 +88,10 @@ v8::Handle<v8::Value> require(std::string moduleId, v8::Handle<v8::Object> requi
             v8::Context::New(v8::Isolate::GetCurrent(), NULL, globalObjectTemplate);
     
         v8::Context::Scope contextScope(Context);
-        
+
+        v8::Local<v8::Object> securityToken = v8::Local<v8::Object>::New(v8::Isolate::GetCurrent(), moduleContext->securityToken);
+        Context->SetSecurityToken(securityToken);
+
         std::string canonicalModuleIdWithoutExtString = canonicalModuleId.replace_extension().string();
 
         v8::Local<v8::Object> module = v8::Object::New();
