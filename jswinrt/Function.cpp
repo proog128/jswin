@@ -6,7 +6,7 @@
 #include "V8ArrayBufferUtils.h"
 #include "V8StringUtils.h"
 
-v8::Handle<v8::FunctionTemplate> Function::V8Constructor;
+v8::Persistent<v8::FunctionTemplate> Function::V8Constructor;
 
 Function::Function(const std::string& signature, CallingConvention callingConvention, void* address)
     : signature(signature), callingConvention(callingConvention), address(address)
@@ -126,10 +126,11 @@ void Function::call(const v8::FunctionCallbackInfo<v8::Value>& args)
 
 void Function::V8Init()
 {
-    V8Constructor = v8::FunctionTemplate::New();
-    V8Constructor->InstanceTemplate()->SetInternalFieldCount(1);
-    V8Constructor->InstanceTemplate()->SetCallAsFunctionHandler(V8Call);
-    V8Constructor->PrototypeTemplate()->Set("getAddress", v8::FunctionTemplate::New(V8SafeCall<V8GetAddress>));
+    v8::Handle<v8::FunctionTemplate> V8ConstructorLocal = v8::FunctionTemplate::New();
+    V8ConstructorLocal->InstanceTemplate()->SetInternalFieldCount(1);
+    V8ConstructorLocal->InstanceTemplate()->SetCallAsFunctionHandler(V8Call);
+    V8ConstructorLocal->PrototypeTemplate()->Set("getAddress", v8::FunctionTemplate::New(V8SafeCall<V8GetAddress>));
+    V8Constructor.Reset(v8::Isolate::GetCurrent(), V8ConstructorLocal);
 }
 
 void Function::V8ConstructorFunction(const v8::FunctionCallbackInfo<v8::Value>& args)
@@ -184,7 +185,8 @@ void Function::V8ConstructorFunction(const v8::FunctionCallbackInfo<v8::Value>& 
 
 void Function::V8Wrap(Function* function, v8::Persistent<v8::Object>& wrappedObj)
 {
-    v8::Handle<v8::Object> obj = V8Constructor->InstanceTemplate()->NewInstance();
+    v8::Handle<v8::FunctionTemplate> V8ConstructorLocal = v8::Handle<v8::FunctionTemplate>::New(v8::Isolate::GetCurrent(), V8Constructor);
+    v8::Handle<v8::Object> obj = V8ConstructorLocal->InstanceTemplate()->NewInstance();
 
     obj->SetInternalField(0, v8::External::New(function));
 

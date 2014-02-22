@@ -1,13 +1,7 @@
 #include <iostream>
+#include <string>
 
-#include <v8.h>
-
-#include "V8ArrayBufferUtils.h"
-#include "GlobalFunctions.h"
-#include "Require.h"
-#include "Library.h"
-#include "Function.h"
-#include "CallbackFunction.h"
+#include "jswin.h"
 
 bool endsWith(const std::string& str, const std::string& end)
 {
@@ -25,56 +19,32 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    try
+    std::string moduleId = argv[1];
+    if(endsWith(moduleId, ".js"))
     {
-        std::string moduleId = argv[1];
-        if(endsWith(moduleId, ".js"))
-        {
-            moduleId = moduleId.substr(0, moduleId.length() - 3);
-        }
-
-        ModuleContext moduleContext;
-
-        v8::Isolate* isolate = v8::Isolate::GetCurrent();
-
-        v8::HandleScope handleScope(isolate);
-
-        v8::V8::SetArrayBufferAllocator(&SimpleArrayBufferAllocator::getInstance());
-
-        Library::V8Init();
-        Function::V8Init();
-        CallbackFunction::V8Init();
-
-        v8::Handle<v8::ObjectTemplate> globalObjectTemplate = buildGlobalObject();
-
-        v8::Handle<v8::Context> context = v8::Context::New(isolate, NULL, globalObjectTemplate);
-
-        v8::Context::Scope contextScope(context);
-
-        v8::Handle<v8::Object> securityToken = v8::Object::New();
-        moduleContext.securityToken.Reset(isolate, securityToken);
-        context->SetSecurityToken(securityToken);
-
-        v8::Handle<v8::Object> requireData = initRequire(context, moduleContext, "");
-        v8::Handle<v8::Object> returnValue;
-        require(moduleId, requireData, returnValue);
-
-        int exitCode = 0;
-        if(!returnValue.IsEmpty())
-        {
-            exitCode = returnValue->Int32Value();
-        }
-        return exitCode;
+        moduleId = moduleId.substr(0, moduleId.length() - 3);
     }
-    catch(const std::exception& ex)
+
+    jswin_ctx* ctx = jswin_init();
+
+    int exitCode;
+    
+    if(JSWIN_FAILED(jswin_run_script(ctx, moduleId.c_str(), &exitCode)))
+
     {
+        exitCode = -1;
+
+        int length = jswin_get_error_msg(ctx, 0, 0);
+        char* message = new char[length];
+        jswin_get_error_msg(ctx, message, length);
 #ifdef _WINDOWS
-        MessageBoxA(NULL, ex.what(), "Error", MB_OK | MB_ICONERROR);
+        MessageBoxA(NULL, message, "Error", MB_OK | MB_ICONERROR);
 #else
-        std::cout << ex.what() << std::endl;
+        std::cout << message << std::endl;
 #endif
-        return -1;
     }
+
+    jswin_shutdown(ctx);
 }
 
 #ifdef _WINDOWS

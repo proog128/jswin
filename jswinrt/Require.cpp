@@ -108,14 +108,22 @@ v8::Handle<v8::Value> require(std::string moduleId, v8::Handle<v8::Object> requi
 
         std::string sourceText = loadFile((canonicalModuleIdString).c_str());
         v8::Handle<v8::String> source = v8::String::New(sourceText.c_str());
-        v8::Handle<v8::Script> script = v8::Script::Compile(source, v8::String::New(canonicalModuleIdString.c_str()));
-    
+
         v8::TryCatch tryCatch;
+        v8::Handle<v8::Script> script = v8::Script::Compile(source, v8::String::New(canonicalModuleIdString.c_str()));
+        if(tryCatch.HasCaught())
+        {
+            v8::String::Utf8Value errorMsg(tryCatch.Message()->Get());
+            throw std::runtime_error(*errorMsg);
+        }
+
+        tryCatch.Reset();
+
         v8::Handle<v8::Value> result = script->Run();
         if(tryCatch.HasCaught())
         {
             v8::String::Utf8Value errorMsg(tryCatch.Message()->Get());
-            std::cout << *errorMsg << "\n";
+            throw std::runtime_error(*errorMsg);
         }
 
         return handleScope.Close(module->Get(v8::String::New("exports")));

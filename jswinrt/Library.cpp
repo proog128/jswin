@@ -4,7 +4,7 @@
 
 #include "V8SafeCall.h"
 
-v8::Handle<v8::FunctionTemplate> Library::V8Constructor;
+v8::Persistent<v8::FunctionTemplate> Library::V8Constructor;
 
 Library::Library(const std::string& libraryName)
     : libraryName(libraryName)
@@ -30,14 +30,16 @@ Function* Library::getProc(const std::string& procName, const std::string& signa
 
 void Library::V8Init()
 {
-    V8Constructor = v8::FunctionTemplate::New();
-    V8Constructor->InstanceTemplate()->SetInternalFieldCount(1);
-    V8Constructor->PrototypeTemplate()->Set("getProc", v8::FunctionTemplate::New(V8SafeCall<V8GetProc>));
+    v8::Handle<v8::FunctionTemplate> V8ConstructorLocal = v8::FunctionTemplate::New();
+    V8ConstructorLocal->InstanceTemplate()->SetInternalFieldCount(1);
+    V8ConstructorLocal->PrototypeTemplate()->Set("getProc", v8::FunctionTemplate::New(V8SafeCall<V8GetProc>));
+    V8Constructor.Reset(v8::Isolate::GetCurrent(), V8ConstructorLocal);
 }
 
 void Library::V8Wrap(Library* library, v8::Persistent<v8::Object>& wrappedObj)
 {
-    v8::Handle<v8::Object> obj = V8Constructor->InstanceTemplate()->NewInstance();
+    v8::Handle<v8::FunctionTemplate> V8ConstructorLocal = v8::Handle<v8::FunctionTemplate>::New(v8::Isolate::GetCurrent(), V8Constructor);
+    v8::Handle<v8::Object> obj = V8ConstructorLocal->InstanceTemplate()->NewInstance();
 
     obj->SetInternalField(0, v8::External::New(library));
 

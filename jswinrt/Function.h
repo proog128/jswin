@@ -20,7 +20,7 @@ public:
     void* getAddress() const { return address; }
 
     static void V8Init();
-    static v8::Handle<v8::FunctionTemplate> V8Constructor;
+    static v8::Persistent<v8::FunctionTemplate> V8Constructor;
 
     static void V8ConstructorFunction(const v8::FunctionCallbackInfo<v8::Value>& args);
     static void V8Wrap(Function* function, v8::Persistent<v8::Object>& wrappedObj);

@@ -16,7 +16,7 @@ public:
     Function* getProc(const std::string& procName, const std::string& signature, Function::CallingConvention callingConvention);
 
     static void V8Init();
-    static v8::Handle<v8::FunctionTemplate> V8Constructor;
+    static v8::Persistent<v8::FunctionTemplate> V8Constructor;
 
     static void V8Wrap(Library* library, v8::Persistent<v8::Object>& wrappedObj);
     static void V8WeakCallback(v8::Isolate* isolate, v8::Persistent<v8::Object>* object, Library* parameter);
