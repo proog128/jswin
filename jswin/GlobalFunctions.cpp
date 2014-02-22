@@ -72,6 +72,30 @@ void V8FromMemory(const v8::FunctionCallbackInfo<v8::Value>& args)
     args.GetReturnValue().Set(arrayBuffer);
 }
 
+void V8ReadString(const v8::FunctionCallbackInfo<v8::Value>& args)
+{
+    if(args.Length() <  2)
+    {
+        throw std::runtime_error("Invalid argument count");
+    }
+
+    v8::String::Utf8Value argType(args[0]);
+    if(!strcmp(*argType, "c"))
+    {
+        const uint8_t* ptr = (const uint8_t*)args[1]->Uint32Value();
+        args.GetReturnValue().Set(v8::String::NewFromOneByte(v8::Isolate::GetCurrent(), ptr));
+    }
+    else if(!strcmp(*argType, "w"))
+    {
+        const uint16_t* ptr = (const uint16_t*)args[1]->Uint32Value();
+        args.GetReturnValue().Set(v8::String::NewFromTwoByte(v8::Isolate::GetCurrent(), ptr));
+    }
+    else
+    {
+        throw std::runtime_error("Unknown string type");
+    }
+}
+
 v8::Handle<v8::ObjectTemplate> buildGlobalObject()
 {
     v8::Handle<v8::ObjectTemplate> globalObjectTemplate = v8::ObjectTemplate::New();
@@ -85,6 +109,7 @@ v8::Handle<v8::ObjectTemplate> buildGlobalObject()
     globalObjectTemplate->Set("CallbackFunction", v8::FunctionTemplate::New(V8SafeCall<CallbackFunction::V8ConstructorFunction>));
 
     globalObjectTemplate->Set("fromMemory", v8::FunctionTemplate::New(V8SafeCall<V8FromMemory>));
+    globalObjectTemplate->Set("readString", v8::FunctionTemplate::New(V8SafeCall<V8ReadString>));
 
     return globalObjectTemplate;
 }

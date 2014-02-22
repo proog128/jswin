@@ -86,7 +86,14 @@ Loads and executes code in another JavaScript file. Based on [CommonJS Modules 1
 
 `fromMemory(address, byteLength)` returns `Object`
 
-Constructs an `ArrayBuffer` over an existing memory block with length `byteLength` at `address`.
+Constructs an `ArrayBuffer` over an existing memory block with length `byteLength` at `address`. The buffer does not take ownership of the memory, which means that deleting the buffer by the garbage collector does not free the memory.
+
+`readString(type, address)` returns `String`
+
+Copies a null-terminated C string stored in memory at `address` into a JavaScript string. `type` has to be one of the following:
+
+* `c` ANSI string
+* `w` wide character string
 
 ## Compiling
 
