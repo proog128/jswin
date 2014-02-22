@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testdll", "testdll\testdll.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jswinrt", "jswinrt\jswinrt.vcxproj", "{B175A184-E7A1-4EF9-90C9-95EFD76A8009}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "jswin_wrapper", "jswin_wrapper\jswin_wrapper.vcxproj", "{FA5107A1-4742-402A-9B8A-DBF72AC814D9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -47,6 +49,15 @@ Global
 		{B175A184-E7A1-4EF9-90C9-95EFD76A8009}.ReleaseW|Win32.ActiveCfg = Release|Win32
 		{B175A184-E7A1-4EF9-90C9-95EFD76A8009}.ReleaseW|Win32.Build.0 = Release|Win32
 		{B175A184-E7A1-4EF9-90C9-95EFD76A8009}.ReleaseW|x64.ActiveCfg = Release|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.Debug|Win32.Build.0 = Debug|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.Debug|x64.ActiveCfg = Debug|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.Release|Win32.ActiveCfg = Release|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.Release|Win32.Build.0 = Release|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.Release|x64.ActiveCfg = Release|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.ReleaseW|Win32.ActiveCfg = Release|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.ReleaseW|Win32.Build.0 = Release|Win32
+		{FA5107A1-4742-402A-9B8A-DBF72AC814D9}.ReleaseW|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
