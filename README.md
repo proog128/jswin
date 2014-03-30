@@ -95,6 +95,10 @@ Copies a null-terminated C string stored in memory at `address` into a JavaScrip
 * `c` ANSI string
 * `w` wide character string
 
+## Building self-running executables
+
+jswin_wrapper wraps JavaScript code in a Windows executable (.exe) for easy distribution. The JavaScript modules are bundled with a loader application (jswin_loader) which runs the main module at startup. jswin resides in a DLL (jswinrt.dll) to be shared by multiple executables.
+
 ## Compiling
 
 This source code package contains project files for Microsoft Visual C++ 2012.
