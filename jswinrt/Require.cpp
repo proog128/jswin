@@ -6,14 +6,20 @@
 #include "V8SafeCall.h"
 #include "GlobalFunctions.h"
 
-std::string loadFile(const std::string& filename)
+namespace fs = boost::filesystem;
+
+std::string loadFile(const ModuleContext& moduleContext, const std::string& filename)
 {
-    std::ifstream file(filename);
-    if(!file.is_open())
+    char* contents_c = moduleContext.readModule(moduleContext.data, filename.c_str());
+    if(contents_c == NULL)
     {
-        throw std::runtime_error("File not found");
+        throw std::runtime_error("Module not found (" + filename + ")");
     }
-    return std::string(std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+
+    std::string contents(contents_c);
+    jswin_free(contents_c);
+
+    return contents;
 }
 
 bool beginsWith(const std::string& str, const std::string& begin)
@@ -45,28 +51,51 @@ v8::Local<v8::Object> initRequire(v8::Handle<v8::Context> context, ModuleContext
     return requireData;
 }
 
+fs::path makeCanonical(const fs::path& absolutePath)
+{
+    fs::path result;
+    bool scan = true;
+    while(scan)
+    {
+      scan = false;
+      result.clear();
+      for(fs::path::iterator it = absolutePath.begin(); it != absolutePath.end(); ++it)
+      {
+        if(*it == ".")
+          continue;
+        if(*it == "..")
+        {
+          result.remove_filename();
+          continue;
+        }
+
+        result /= *it;
+      }
+    }
+    return result;
+}
+
 v8::Handle<v8::Value> require(std::string moduleId, v8::Handle<v8::Object> requireData, v8::Handle<v8::Object>& returnValue)
 {
     bool isRelative = beginsWith(moduleId, ".") || beginsWith(moduleId, "..");
-    moduleId += ".js";
 
     std::string currentModuleId = *v8::String::Utf8Value(requireData->GetHiddenValue(v8::String::New("__MODULE_ID")->ToString()));
     v8::Handle<v8::External> moduleContextExternal = v8::Local<v8::External>::Cast(requireData->GetHiddenValue(v8::String::New("__MODULE_CONTEXT")));
     ModuleContext* moduleContext = static_cast<ModuleContext*>(moduleContextExternal->Value());
 
-    boost::filesystem::path currentModulePath = boost::filesystem::path(currentModuleId).parent_path();
+    fs::path currentModulePath = fs::path(currentModuleId).parent_path();
 
-    boost::filesystem::path canonicalModuleId;
+    fs::path canonicalModuleId;
     if(isRelative)
     {
-        canonicalModuleId = boost::filesystem::canonical(currentModulePath / moduleId);
+        canonicalModuleId = makeCanonical(currentModulePath / moduleId);
     }
     else
     {
-        canonicalModuleId = boost::filesystem::canonical(moduleId);
+        canonicalModuleId = makeCanonical(fs::path(moduleContext->rootDirectory) / moduleId);
     }
 
-    std::string canonicalModuleIdString = canonicalModuleId.string().c_str();
+    std::string canonicalModuleIdString = canonicalModuleId.generic_string().c_str();
 
     ModuleContext::ModuleMapT& moduleList = moduleContext->modules;
     ModuleContext::ModuleMapT::const_iterator moduleIt = moduleList.find(canonicalModuleIdString);
@@ -106,7 +135,7 @@ v8::Handle<v8::Value> require(std::string moduleId, v8::Handle<v8::Object> requi
 
         moduleList.insert(std::make_pair(canonicalModuleIdString, ModuleContext::ModulePersistentT(v8::Isolate::GetCurrent(), module)));
 
-        std::string sourceText = loadFile((canonicalModuleIdString).c_str());
+        std::string sourceText = loadFile(*moduleContext, canonicalModuleIdString.c_str());
         v8::Handle<v8::String> source = v8::String::New(sourceText.c_str());
 
         v8::TryCatch tryCatch;
