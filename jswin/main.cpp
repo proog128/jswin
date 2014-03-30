@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <windows.h>
 
 #include "jswin.h"
 
@@ -30,7 +31,6 @@ int main(int argc, char* argv[])
     int exitCode;
     
     if(JSWIN_FAILED(jswin_run_script(ctx, moduleId.c_str(), &exitCode)))
-
     {
         exitCode = -1;
 
@@ -45,6 +45,8 @@ int main(int argc, char* argv[])
     }
 
     jswin_shutdown(ctx);
+
+    return exitCode;
 }
 
 #ifdef _WINDOWS
