@@ -23,7 +23,7 @@ unsigned int __stdcall genericCallbackFunction(CallbackFunction* cb)
         if(signature[i] == 'i')
         {
             unsigned int v = 0;
-            unsigned int o = 16 + i*4;
+            unsigned int o = 16 + (i-1)*4;
             _asm mov eax, ebp
             _asm add eax, o
             _asm mov ecx, [eax]
@@ -33,7 +33,7 @@ unsigned int __stdcall genericCallbackFunction(CallbackFunction* cb)
         else if(signature[i] == 'u')
         {
             int v = 0;
-            unsigned int o = 16 + i*4;
+            unsigned int o = 16 + (i-1)*4;
             _asm mov eax, ebp
             _asm add eax, o
             _asm mov ecx, [eax]
@@ -50,7 +50,7 @@ unsigned int __stdcall genericCallbackFunction(CallbackFunction* cb)
 
     if(signature[0] == 'i')
     {
-        return returnObj->Uint32Value();
+        return returnObj->Int32Value();
     }
     else if(signature[0] == 'u')
     {
